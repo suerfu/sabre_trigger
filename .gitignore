@@ -45,3 +45,12 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# VHDL files
+*.qws
+*.vhd.bak
+db
+incremental_db
+output_files
+simulation/modelsim
+simulation/qsim
