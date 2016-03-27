@@ -1,33 +1,51 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
--- edge detector detects rising edge of the trigger signal.
--- the trigger signal is fed into the clock input of the flip flop
--- data is a constant high voltage. 
-
-entity dff is
+entity dflipflop is
 
 	port(
 		clk : in std_logic;
 		reset : in std_logic;
+		D : in std_logic;
 		Q : out std_logic;
 		Qbar : out std_logic
 	);
 
-end dff;
+end dflipflop;
 
-architecture arch_edge_detector of dff is
+architecture arch_dff_reset_low of dflipflop is
+signal internal : std_logic;
 begin
 
 	process(clk,reset)
 	begin
 		if (reset='0') then
-			Q <= '0';
-			Qbar <= '1';
+			internal <= '0';
 		elsif (clk'event and clk='1') then
-			Q <= '1';
-			Qbar <= '0';
+			internal <= D;
 		end if;
 	end process;
 	
-end arch_edge_detector;
+	Q <= internal;
+	Qbar <= not internal;
+	
+end arch_dff_reset_low;
+
+
+architecture arch_dff_reset_high of dflipflop is
+signal internal : std_logic;
+begin
+
+	process(clk,reset)
+	begin
+		if (reset='0') then
+			internal <= '1';
+		elsif (clk'event and clk='1') then
+			internal <= D;
+		end if;
+	end process;
+	
+	Q <= internal;
+	Qbar <= not internal;
+	
+end arch_dff_reset_high;
