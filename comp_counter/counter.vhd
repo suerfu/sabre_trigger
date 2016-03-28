@@ -42,7 +42,7 @@ entity counter is
 	
 end counter;
 
-architecture arch_counter of counter is
+architecture arch_univ_counter of counter is
 signal current_value, next_value : unsigned(Nbits-1 downto 0);
 
 begin
@@ -52,7 +52,9 @@ begin
 			if (reset='0') then
 				current_value <= (others=>'0');
 			elsif (clk'event and clk='1') then
-				current_value <= next_value;
+				if en='1' then
+					current_value <= next_value;
+				end if;
 			end if;
 		end process;
 
@@ -68,4 +70,38 @@ begin
 		min <= '1' when (current_value = 0) else
 				 '0';
 						  
-end arch_counter;
+end arch_univ_counter;
+
+-- Suerfu @ 27 March, 2016
+-- architecture count_down specifically performs count down.
+-- asserting high the load pin will load the preset value, and start count down.
+-- count down will stop either when the value reaches minimum, or when enable is disabled.
+
+architecture arch_count_down of counter is
+signal current_value, next_value : unsigned(Nbits-1 downto 0);
+
+begin
+		process(clk,reset)
+		begin
+			-- asynchronous reset takes priority. In that case, reset register output value and status
+			if (reset='0') then
+				current_value <= (others=>'0');
+			elsif (clk'event and clk='1') then
+				if en='1' then
+					current_value <= next_value;
+				end if;
+			end if;
+		end process;
+
+		next_value <= (others=>'0') when sync_clr='1' else
+						  unsigned(load_value) when load='1' else
+						  current_value when current_value=0 else
+						  current_value-1;
+			-- next state logic.  Sync clear preceeds load preceeds counting.
+		Q <= std_logic_vector(current_value);
+		max <= '1' when (current_value = unsigned(load_value)) else
+				 '0';
+		min <= '1' when (current_value = 0) else
+				 '0';
+						  
+end arch_count_down;

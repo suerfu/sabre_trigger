@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+-- Suerfu @ 25 March, 2016
 -- edge detector detects rising edge of the trigger signal.
 -- the trigger signal is fed into the clock input of the flip flop
 -- data is a constant high voltage. 
