@@ -29,6 +29,6 @@ begin
 		end if;
 	end process;
 	
-	Q <= D and (not internal);
+	Q <= D and (not internal) and reset;
 	
 end arch_sync_edge_detector;

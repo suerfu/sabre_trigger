@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 -- Suerfu @ March 25, 2016
+-- Gate generator generates a gate of programmable length in clock cycle.
+-- It responds to the signal edge. For every incoming edge it will reload.
 
 entity gate_generator is
 	generic(
