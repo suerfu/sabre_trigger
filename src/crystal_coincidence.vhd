@@ -25,8 +25,9 @@ entity crystal_coincidence is
 			-- signal input from crystal scintillation
 		gate_len : in std_logic_vector(Nbits_gate-1 downto 0);
 			-- register that holds coincidence window length
-		coincidence : out std_logic--;
+		coincidence : out std_logic;
 			-- output of coincidence
+		crystal_output : out std_logic_vector(Npmt-1 downto 0)
 --		count : out std_logic_vector(Nbits_gate-1 downto 0);
 --		col_q : out std_logic_vector(Nbits_gate-1 downto 0)
 	);
@@ -77,6 +78,8 @@ begin
 	end generate;
 	
 	-- combine output of all PMTs in the same crystal
+	crystal_output <= gate_out;
+	
 	temp_coin(0) <= gate_out(0);
 	label_coin_gate: for i in 1 to Npmt-1 generate
 	begin

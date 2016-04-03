@@ -20,7 +20,7 @@ entity binary_counter is
 			-- asynchronous reset
 		en	: in std_logic;
 			-- enable the counter
-		sync_clr : in std_logic;
+		sync_clr : in std_logic :='0';
 			-- synchronous clear
 		Q : out std_logic_vector(Nbits-1 downto 0)
 			-- adjustable window length
