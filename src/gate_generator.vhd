@@ -21,9 +21,9 @@ entity gate_generator is
 			-- one shot, enables gate generator
 		gate_len : in std_logic_vector(Nbits_gate-1 downto 0);
 		-- register that holds window length
-		gate : out std_logic
+		gate : out std_logic--;
 			-- output gate for comparator (optional in count down mode)
---		count : out std_logic_vector(Nbits_gate-1 downto 0)
+		--count : out std_logic_vector(Nbits_gate-1 downto 0)
 	);
 
 end gate_generator;
@@ -49,7 +49,7 @@ begin
 					 sync_clr => '0',
 					 load_value => gate_len,
 					 min => to_gate--,
---					 Q => count
+					 --Q => count
 					 );
 
 	gate <= not to_gate;

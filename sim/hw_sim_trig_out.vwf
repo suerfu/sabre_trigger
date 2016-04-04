@@ -32,47 +32,37 @@ HEADER
 	GRID_DUTY_CYCLE = 50;
 }
 
-SIGNAL("delay")
+SIGNAL("output_mode")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = BUS;
-	WIDTH = 3;
+	WIDTH = 2;
 	LSB_INDEX = 0;
 	DIRECTION = INPUT;
 	PARENT = "";
 }
 
-SIGNAL("delay[2]")
+SIGNAL("output_mode[1]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "output_mode";
 }
 
-SIGNAL("delay[1]")
+SIGNAL("output_mode[0]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "output_mode";
 }
 
-SIGNAL("delay[0]")
-{
-	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = SINGLE_BIT;
-	WIDTH = 1;
-	LSB_INDEX = -1;
-	DIRECTION = INPUT;
-	PARENT = "delay";
-}
-
-SIGNAL("clk")
+SIGNAL("clk_in")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
@@ -82,7 +72,7 @@ SIGNAL("clk")
 	PARENT = "";
 }
 
-SIGNAL("D")
+SIGNAL("crystal_input")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
@@ -92,47 +82,27 @@ SIGNAL("D")
 	PARENT = "";
 }
 
-SIGNAL("gate_out")
+SIGNAL("LED_clk")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = BUS;
-	WIDTH = 3;
-	LSB_INDEX = 0;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
 	DIRECTION = OUTPUT;
 	PARENT = "";
 }
 
-SIGNAL("gate_out[2]")
+SIGNAL("LED_crystal")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = OUTPUT;
-	PARENT = "gate_out";
+	PARENT = "";
 }
 
-SIGNAL("gate_out[1]")
-{
-	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = SINGLE_BIT;
-	WIDTH = 1;
-	LSB_INDEX = -1;
-	DIRECTION = OUTPUT;
-	PARENT = "gate_out";
-}
-
-SIGNAL("gate_out[0]")
-{
-	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = SINGLE_BIT;
-	WIDTH = 1;
-	LSB_INDEX = -1;
-	DIRECTION = OUTPUT;
-	PARENT = "gate_out";
-}
-
-SIGNAL("Q")
+SIGNAL("LED_veto")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
@@ -152,7 +122,27 @@ SIGNAL("reset")
 	PARENT = "";
 }
 
-SIGNAL("sync_clr")
+SIGNAL("reset_out")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
+}
+
+SIGNAL("trig_out")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
+}
+
+SIGNAL("veto_en")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
@@ -162,7 +152,17 @@ SIGNAL("sync_clr")
 	PARENT = "";
 }
 
-TRANSITION_LIST("delay[2]")
+SIGNAL("veto_input")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+TRANSITION_LIST("output_mode[1]")
 {
 	NODE
 	{
@@ -171,7 +171,7 @@ TRANSITION_LIST("delay[2]")
 	}
 }
 
-TRANSITION_LIST("delay[1]")
+TRANSITION_LIST("output_mode[0]")
 {
 	NODE
 	{
@@ -180,16 +180,7 @@ TRANSITION_LIST("delay[1]")
 	}
 }
 
-TRANSITION_LIST("delay[0]")
-{
-	NODE
-	{
-		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
-	}
-}
-
-TRANSITION_LIST("clk")
+TRANSITION_LIST("clk_in")
 {
 	NODE
 	{
@@ -203,22 +194,20 @@ TRANSITION_LIST("clk")
 	}
 }
 
-TRANSITION_LIST("D")
+TRANSITION_LIST("crystal_input")
 {
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 40.0;
+		LEVEL 0 FOR 20.0;
+		LEVEL 1 FOR 40.0;
+		LEVEL 0 FOR 130.0;
 		LEVEL 1 FOR 70.0;
-		LEVEL 0 FOR 140.0;
-		LEVEL 1 FOR 70.0;
-		LEVEL 0 FOR 220.0;
-		LEVEL 1 FOR 50.0;
-		LEVEL 0 FOR 410.0;
+		LEVEL 0 FOR 740.0;
 	}
 }
 
-TRANSITION_LIST("gate_out[2]")
+TRANSITION_LIST("LED_clk")
 {
 	NODE
 	{
@@ -227,7 +216,7 @@ TRANSITION_LIST("gate_out[2]")
 	}
 }
 
-TRANSITION_LIST("gate_out[1]")
+TRANSITION_LIST("LED_crystal")
 {
 	NODE
 	{
@@ -236,16 +225,7 @@ TRANSITION_LIST("gate_out[1]")
 	}
 }
 
-TRANSITION_LIST("gate_out[0]")
-{
-	NODE
-	{
-		REPEAT = 1;
-		LEVEL X FOR 1000.0;
-	}
-}
-
-TRANSITION_LIST("Q")
+TRANSITION_LIST("LED_veto")
 {
 	NODE
 	{
@@ -263,7 +243,25 @@ TRANSITION_LIST("reset")
 	}
 }
 
-TRANSITION_LIST("sync_clr")
+TRANSITION_LIST("reset_out")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("trig_out")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("veto_en")
 {
 	NODE
 	{
@@ -272,9 +270,22 @@ TRANSITION_LIST("sync_clr")
 	}
 }
 
+TRANSITION_LIST("veto_input")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 320.0;
+		LEVEL 1 FOR 40.0;
+		LEVEL 0 FOR 110.0;
+		LEVEL 1 FOR 60.0;
+		LEVEL 0 FOR 470.0;
+	}
+}
+
 DISPLAY_LINE
 {
-	CHANNEL = "clk";
+	CHANNEL = "clk_in";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 0;
@@ -283,7 +294,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "D";
+	CHANNEL = "crystal_input";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 1;
@@ -292,87 +303,82 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay";
+	CHANNEL = "LED_clk";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 2;
 	TREE_LEVEL = 0;
-	CHILDREN = 3, 4, 5;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[2]";
+	CHANNEL = "LED_crystal";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 3;
-	TREE_LEVEL = 1;
-	PARENT = 2;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[1]";
+	CHANNEL = "LED_veto";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 4;
-	TREE_LEVEL = 1;
-	PARENT = 2;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[0]";
+	CHANNEL = "output_mode";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 5;
-	TREE_LEVEL = 1;
-	PARENT = 2;
+	TREE_LEVEL = 0;
+	CHILDREN = 6, 7;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "gate_out";
+	CHANNEL = "output_mode[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 6;
-	TREE_LEVEL = 0;
-	CHILDREN = 7, 8, 9;
+	TREE_LEVEL = 1;
+	PARENT = 5;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "gate_out[2]";
+	CHANNEL = "output_mode[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 7;
 	TREE_LEVEL = 1;
-	PARENT = 6;
+	PARENT = 5;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "gate_out[1]";
+	CHANNEL = "reset";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 8;
-	TREE_LEVEL = 1;
-	PARENT = 6;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "gate_out[0]";
+	CHANNEL = "reset_out";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 9;
-	TREE_LEVEL = 1;
-	PARENT = 6;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "Q";
+	CHANNEL = "trig_out";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 10;
@@ -381,7 +387,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "reset";
+	CHANNEL = "veto_en";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 11;
@@ -390,7 +396,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "sync_clr";
+	CHANNEL = "veto_input";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 12;

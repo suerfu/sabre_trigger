@@ -32,3 +32,20 @@ begin
 	Q <= D and (not internal) and reset;
 	
 end arch_sync_edge_detector;
+
+architecture arch_sync_edge_detector_falling_edge of sync_edge_detector is
+signal internal : std_logic;
+begin
+
+	process(clk,reset)
+	begin
+		if (reset='0') then
+			internal <= '0';
+		elsif (clk'event and clk='1') then
+			internal <= D;
+		end if;
+	end process;
+	
+	Q <= (not D) and internal and reset;
+	
+end arch_sync_edge_detector_falling_edge;

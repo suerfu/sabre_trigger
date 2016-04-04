@@ -32,16 +32,6 @@ HEADER
 	GRID_DUTY_CYCLE = 50;
 }
 
-SIGNAL("clk")
-{
-	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = SINGLE_BIT;
-	WIDTH = 1;
-	LSB_INDEX = -1;
-	DIRECTION = INPUT;
-	PARENT = "";
-}
-
 SIGNAL("crystal_output")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
@@ -72,54 +62,64 @@ SIGNAL("crystal_output[0]")
 	PARENT = "crystal_output";
 }
 
-SIGNAL("delay")
+SIGNAL("input_duration")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = BUS;
-	WIDTH = 4;
+	WIDTH = 3;
 	LSB_INDEX = 0;
 	DIRECTION = INPUT;
 	PARENT = "";
 }
 
-SIGNAL("delay[3]")
+SIGNAL("input_duration[2]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "input_duration";
 }
 
-SIGNAL("delay[2]")
+SIGNAL("input_duration[1]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "input_duration";
 }
 
-SIGNAL("delay[1]")
+SIGNAL("input_duration[0]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "input_duration";
 }
 
-SIGNAL("delay[0]")
+SIGNAL("clk_in")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "delay";
+	PARENT = "";
+}
+
+SIGNAL("LED_clock")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
 }
 
 SIGNAL("reset")
@@ -135,11 +135,31 @@ SIGNAL("reset")
 SIGNAL("trig_in")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = BUS;
+	WIDTH = 2;
+	LSB_INDEX = 0;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+SIGNAL("trig_in[1]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
-	PARENT = "";
+	PARENT = "trig_in";
+}
+
+SIGNAL("trig_in[0]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "trig_in";
 }
 
 SIGNAL("trig_out")
@@ -150,20 +170,6 @@ SIGNAL("trig_out")
 	LSB_INDEX = -1;
 	DIRECTION = OUTPUT;
 	PARENT = "";
-}
-
-TRANSITION_LIST("clk")
-{
-	NODE
-	{
-		REPEAT = 1;
-		NODE
-		{
-			REPEAT = 50;
-			LEVEL 0 FOR 10.0;
-			LEVEL 1 FOR 10.0;
-		}
-	}
 }
 
 TRANSITION_LIST("crystal_output[1]")
@@ -184,25 +190,7 @@ TRANSITION_LIST("crystal_output[0]")
 	}
 }
 
-TRANSITION_LIST("delay[3]")
-{
-	NODE
-	{
-		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
-	}
-}
-
-TRANSITION_LIST("delay[2]")
-{
-	NODE
-	{
-		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
-	}
-}
-
-TRANSITION_LIST("delay[1]")
+TRANSITION_LIST("input_duration[2]")
 {
 	NODE
 	{
@@ -211,12 +199,44 @@ TRANSITION_LIST("delay[1]")
 	}
 }
 
-TRANSITION_LIST("delay[0]")
+TRANSITION_LIST("input_duration[1]")
 {
 	NODE
 	{
 		REPEAT = 1;
 		LEVEL 1 FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("input_duration[0]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 1 FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("clk_in")
+{
+	NODE
+	{
+		REPEAT = 1;
+		NODE
+		{
+			REPEAT = 50;
+			LEVEL 0 FOR 10.0;
+			LEVEL 1 FOR 10.0;
+		}
+	}
+}
+
+TRANSITION_LIST("LED_clock")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
 	}
 }
 
@@ -229,14 +249,29 @@ TRANSITION_LIST("reset")
 	}
 }
 
-TRANSITION_LIST("trig_in")
+TRANSITION_LIST("trig_in[1]")
 {
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 50.0;
-		LEVEL 1 FOR 440.0;
-		LEVEL 0 FOR 510.0;
+		LEVEL 0 FOR 90.0;
+		LEVEL 1 FOR 80.0;
+		LEVEL 0 FOR 370.0;
+		LEVEL 1 FOR 70.0;
+		LEVEL 0 FOR 390.0;
+	}
+}
+
+TRANSITION_LIST("trig_in[0]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 140.0;
+		LEVEL 1 FOR 60.0;
+		LEVEL 0 FOR 570.0;
+		LEVEL 1 FOR 60.0;
+		LEVEL 0 FOR 170.0;
 	}
 }
 
@@ -251,7 +286,7 @@ TRANSITION_LIST("trig_out")
 
 DISPLAY_LINE
 {
-	CHANNEL = "clk";
+	CHANNEL = "clk_in";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 0;
@@ -260,7 +295,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "trig_in";
+	CHANNEL = "LED_clock";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 1;
@@ -269,17 +304,17 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay";
+	CHANNEL = "input_duration";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 2;
 	TREE_LEVEL = 0;
-	CHILDREN = 3, 4, 5, 6;
+	CHILDREN = 3, 4, 5;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[3]";
+	CHANNEL = "input_duration[2]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 3;
@@ -289,7 +324,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[2]";
+	CHANNEL = "input_duration[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 4;
@@ -299,7 +334,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[1]";
+	CHANNEL = "input_duration[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 5;
@@ -309,17 +344,16 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "delay[0]";
+	CHANNEL = "reset";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 6;
-	TREE_LEVEL = 1;
-	PARENT = 2;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "crystal_output";
+	CHANNEL = "trig_in";
 	EXPAND_STATUS = EXPANDED;
 	RADIX = Binary;
 	TREE_INDEX = 7;
@@ -329,7 +363,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "crystal_output[1]";
+	CHANNEL = "trig_in[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 8;
@@ -339,7 +373,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "crystal_output[0]";
+	CHANNEL = "trig_in[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 9;
@@ -349,19 +383,40 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "trig_out";
-	EXPAND_STATUS = COLLAPSED;
+	CHANNEL = "crystal_output";
+	EXPAND_STATUS = EXPANDED;
 	RADIX = Binary;
 	TREE_INDEX = 10;
 	TREE_LEVEL = 0;
+	CHILDREN = 11, 12;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "reset";
+	CHANNEL = "crystal_output[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 11;
+	TREE_LEVEL = 1;
+	PARENT = 10;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "crystal_output[0]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 12;
+	TREE_LEVEL = 1;
+	PARENT = 10;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "trig_out";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 13;
 	TREE_LEVEL = 0;
 }
 

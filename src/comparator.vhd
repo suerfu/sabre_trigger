@@ -47,7 +47,7 @@ entity majority_comparator is
 
 	generic (
 		Nbits_cmpr : integer := 4;
-			-- holds the constant to be compared
+			-- holds bits of the constant to be compared
 		Nbits : integer := 10
 			-- line width of the input vector
 	);
