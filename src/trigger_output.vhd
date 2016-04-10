@@ -19,10 +19,12 @@ entity trigger_output is
 					-- length of trigger time
 				Nbits_vetotime : integer := 8;
 					-- number of bits for veto window
-				Nbits_deadtime : integer := 8;
+				Nbits_deadtime : integer := 8
 					-- number of bits for dead time
-				Nbits_delaytime : integer := 3
+				--Nbits_delaytime : integer := 3
 					-- number of bits needed to describe delay time
+					-- the delay generator is an 8-bit shift register
+					-- do not change this value since 8 is hard-coded.
 				);
 	port( clk : in std_logic;
 				-- system clock input
@@ -34,9 +36,10 @@ entity trigger_output is
 				-- veto input
 			veto_en : in std_logic;
 				-- veto enable / diable
-			sig_delay_time : in std_logic_vector(Nbits_delaytime-1 downto 0);
+			sig_delay_time : in std_logic_vector(2 downto 0);
 				-- amount of delay in clock cycle applied to signal
 				-- during the delay, system waits for veto signal
+				-- the delay generator is an 8-bit shift register, so need only 3 numbers
 			veto_window : in std_logic_vector(Nbits_vetotime-1 downto 0);
 				-- length of veto window in number of clock cycles
 			dead_time : in std_logic_vector(Nbits_deadtime-1 downto 0);
@@ -61,7 +64,7 @@ begin
 
 	-- shift register / delay generator to wait for possible veto
 	gate_delay: entity work.delay_gen(arch_delay_gen)
-		generic map(Nbits_gate => Nbits_delaytime)
+--		generic map(Nbits_gate => Nbits_delaytime) -- using 8-bit shift-reg, no longer needed.
 		port map( clk => clk,
 					 reset => reset and (not signal_out) and (not veto_out),
 					 sync_clr => '0',
@@ -105,13 +108,13 @@ begin
 	gate_veto: entity work.gate_generator(arch_gate_generator)
 		generic map(Nbits_gate => Nbits_vetotime)
 		port map( clk => clk,
-					 reset => reset and (not enable_veto),
+					 reset => reset and enable_veto,
 					 en => veto_input,-- and enable_veto,
 					 gate_len => veto_window,
 					 gate => veto_out
 					);
-	enable_veto <= not veto_en when output_mode="00" else
-						'1';
+	enable_veto <= veto_en when output_mode="00" else
+						'0';
 	
 	reset_out <= (not signal_out) and (not veto_out);
 	

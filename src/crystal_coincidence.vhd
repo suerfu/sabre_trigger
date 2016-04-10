@@ -8,10 +8,10 @@ entity crystal_coincidence is
 	generic(
 		Npmt : integer := 2;
 			-- number of pmt per crystal
-		Nbits_gate : integer := 2;
+		Nbits_gate : integer := 2--;
 			-- coincidence window in number of clock cycles
-		Ndelay : integer := 2
-			-- delay in number of clock cycles
+--		Nbits_sync : integer := 2
+--			-- delay in number of clock cycles
 	);
 
 	port (
@@ -27,9 +27,10 @@ entity crystal_coincidence is
 			-- register that holds coincidence window length
 		coincidence : out std_logic;
 			-- output of coincidence
-		crystal_output : out std_logic_vector(Npmt-1 downto 0)
+		crystal_output : out std_logic_vector(Npmt-1 downto 0);
 --		count : out std_logic_vector(Nbits_gate-1 downto 0);
 --		col_q : out std_logic_vector(Nbits_gate-1 downto 0)
+		sync_out : out std_logic_vector(Npmt-1 downto 0)
 	);
 
 end crystal_coincidence;
@@ -45,7 +46,7 @@ begin
 	begin
 		edge_det: entity work.edge_detector(arch_edge_detector)
 			port map( clk => crystal_input(i),
-						 reset => ( reset_after_mux and reset), -- reset is active low, reset_ff will use less than signal
+						 reset =>  reset_after_mux and reset ,--and (not sig_for_retrig), -- reset is active low, reset_ff will use less than signal
 						 Q => signal_after_ff					    -- driving Q high enables counter
 						 );
 		
@@ -55,7 +56,8 @@ begin
 						 reset => reset,					-- global reset applies to counter directly
 						 en => signal_after_ff,
 						 gate_len => gate_len,
-						 gate => gate_out(i)
+						 gate => gate_out(i),
+						 sync_out => sync_out(i)
 						 );
 		flpflp: entity work.dflipflop(arch_dff_reset_low)
 			port map( clk => clk,
@@ -67,7 +69,7 @@ begin
 		oneshot: entity work.sync_edge_detector(arch_sync_edge_detector)
 			port map( D => sig_for_retrig,
 						 clk => clk,
-						 reset => reset,
+						 reset => not sig_for_retrig,
 						 Q => oneshot_to_mux
 						);
 						

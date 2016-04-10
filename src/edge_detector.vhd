@@ -9,10 +9,10 @@ use ieee.std_logic_1164.all;
 entity edge_detector is
 
 	port(
-		clk : in std_logic;
-		reset : in std_logic;
-		Q : out std_logic;
-		Qbar : out std_logic
+		clk : in std_logic := '0';
+		reset : in std_logic := '1';
+		Q : out std_logic :='0';
+		Qbar : out std_logic := '1'
 	);
 
 end edge_detector;

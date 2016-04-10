@@ -47,7 +47,7 @@ begin
 	LED_veto <= not veto_input;
 	
 	lb_trig_out: entity work.trigger_output(arch_trigger_output)
-		generic map(Nbits_deadtime=>Nbits_deadtime,Nbits_delaytime=>Nbits_delaytime,Nbits_trigtime=>Nbits_trigtime,Nbits_vetotime=>Nbits_vetotime)
+		generic map(Nbits_deadtime=>Nbits_deadtime,Nbits_trigtime=>Nbits_trigtime,Nbits_vetotime=>Nbits_vetotime)
 		port map( clk=>clk, reset=>reset, crystal_input=> not crystal_input, veto_input=> not veto_input, veto_en=>veto_en, sig_delay_time=>sig_delay_time,
 						veto_window=>veto_window, dead_time=>dead_time, output_mode=>output_mode, trig_out=>trig_out, trig_time=>trig_time, reset_out=>reset_for_disp);
 	reset_out <= not reset_for_disp;

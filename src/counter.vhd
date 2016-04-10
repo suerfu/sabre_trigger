@@ -18,25 +18,25 @@ entity counter is
 	);
 	
 	port(
-		clk : in std_logic;
+		clk : in std_logic :='0';
 			-- counter clock input
-		reset : in std_logic;
+		reset : in std_logic; :='1'
 			-- asynchronous reset
-		load : in std_logic;
+		load : in std_logic := '0';
 			-- load specific value, synchronous
-		load_value : in std_logic_vector(Nbits-1 downto 0);
+		load_value : in std_logic_vector(Nbits-1 downto 0) := (others=>'0');
 			-- value to load
-		en	: in std_logic;
+		en	: in std_logic :='1';
 			-- enable the counter
-		up : in std_logic;
+		up : in std_logic :='1';
 			-- count up when '1'
-		sync_clr : in std_logic;
+		sync_clr : in std_logic := '0';
 			-- synchronous clear
-		Q : out std_logic_vector(Nbits-1 downto 0);
+		Q : out std_logic_vector(Nbits-1 downto 0) := (others=>'0');
 			-- adjustable window length
-		max : out std_logic;
+		max : out std_logic :='0';
 			-- counter at max value
-		min : out std_logic
+		min : out std_logic :='1'
 			-- counter at minimum value
 	);
 	

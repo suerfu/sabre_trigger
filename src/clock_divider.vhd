@@ -7,7 +7,7 @@ use ieee.numeric_std.all;
 -- it takes in 50 MHz clock, and outputs 10 second clock period.
 
 entity clock_divider is
-	generic (Nbits:integer:=4);
+	generic (Nbits:integer:=5);
 	port(
 		clk_in : in std_logic;
 		clk_out: out std_logic
@@ -16,7 +16,7 @@ end clock_divider;
 
 architecture arch_clock_divider of clock_divider is
 signal ctr_out: std_logic_vector(Nbits-1 downto 0);
-constant cmp: std_logic_vector(Nbits-1 downto 0) :=std_logic_vector(to_unsigned(2**(Nbits-1),Nbits));
+constant cmp: std_logic_vector(Nbits-1 downto 0) :=std_logic_vector(to_unsigned(1,Nbits));
 begin
 	lb_ctr: entity work.counter(arch_univ_counter)
 		generic map(Nbits=>Nbits)
