@@ -20,7 +20,7 @@ entity counter is
 	port(
 		clk : in std_logic :='0';
 			-- counter clock input
-		reset : in std_logic; :='1'
+		reset : in std_logic :='1';
 			-- asynchronous reset
 		load : in std_logic := '0';
 			-- load specific value, synchronous
