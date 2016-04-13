@@ -1,75 +1,79 @@
---library ieee;
---use ieee.std_logic_1164.all;
---
--- edge detector detects rising edge of the trigger signal.
--- the trigger signal is fed into the clock input of the flip flop
--- data is a constant high voltage. 
---
---entity sabre_trigger is
---
---	generic(
---		N_nai_crystal : integer := 1;
---			-- number of NaI crystals. Each crystal gets two PMTs.
---		N_veto_pmt : integer := 10;
---			-- number of veto PMT. Usually it is 10.
---		N_nai_coin_window : integer := 10
---			-- length of NaI coincidence window, measured in clock cycles.
---	);
---	
---	port(
---		nai_pmt : in std_logic_vector(2*N_nai_crystal-1 downto 0);
---			-- vector holding input signal for all NaI pmt signals.
---		veto_pmt : in std_logic_vector(N_veto_pmt-1 downto 0);
---			-- vector holding veto input signal.
---		coin_window : in std_logic_vector(N_nai_coin_window-1 downto 0);
---			-- bit vector that holds number of clocl cycles for coincidence window
---		reset : in std_logic;
---			-- a global reset command
---		clk : in std_logic;
---			-- system clock.
---		majority_level : in std_logic_vector(3 downto 0);
---			-- majority trigger for veto coincidence
---		trig_out : out std_logic
---	);
---
---end sabre_trigger;
---
---architecture arch_sabre_trigger of sabre_trigger is
---
---signal trigger_after_coin : std_logic_vector(N_nai_crystal-1 downto 0);
---	-- pmt pair coincidence, after coincidence AND gate. To be fed to OR gate.
---signal trigger_before_coin : std_logic_vector(2*N_nai_crystal-1 downto 0);
---	-- pmt pair coincidence, before coincidence AND gate.
---signal temp_and_gate : std_logic_vector(N_nai_crystal-1 downto 0);
---begin
---	-- generate coincidence window
---	label_nai_coin_window : for i in 0 to 2*N_nai_crystal-1 generate
---	signal w_internal_reset, w_counter_reset : std_logic;
---	signal w_enable : std_logic;
---		-- this wire is used to rout the reset signal from the counter
---	begin
---		label_nai_edge_detector: entity work.edge_triggered_dff(arch_edge_triggered_dff)
---			port map(clk=>nai_pmt(i), D=>'1', reset=>w_internal_reset, Q=>w_enable);
---			-- input NaI pmt signal to edge detector
---			
---		label_nai_counter: entity work.counter(arch_counter)
---			generic map( N_window=>N_nai_coin_window )
---			port map(clk=>clk, en=>w_enable, reset=>reset, window=>coin_window, status=>trigger_before_coin(i), c_over=>w_counter_reset);
---			-- map output of edge detector to the enable pin of counter
---
---		w_internal_reset <= (w_counter_reset or reset);
---	end generate;
---	
---	label_pmt_coincidence: for i in 0 to N_nai_crystal-1 generate
---	begin
---		trigger_after_coin(i) <= trigger_before_coin(2*i) and trigger_before_coin(2*i+1);
---	end generate;
---	
---	temp_and_gate(0) <= trigger_after_coin(0);
---	label_or_gate: for i in 1 to (N_nai_crystal-1) generate
---		temp_and_gate(i) <= (temp_and_gate(i-1) and trigger_after_coin(i));
---	end generate;
---	
---	trig_out <= temp_and_gate(N_nai_crystal-1);
---	
---end arch_sabre_trigger;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity sabre_trigger is
+	generic( Ncrystal : integer := 1;
+				Nbits_crystal_gate : integer := 8;	-- coincidence gate up to ~5 us.
+				
+				Nveto_pmt : integer := 10;
+				Nbits_majlev : integer := 3;	-- 4 bits needed to enumerate up to 10, but 3 is fine.
+				Nbits_veto_gate : integer := 8;	-- up to 5 us.
+				
+				Nbits_trigtime : integer := 8; -- up to 5 us.
+				Nbits_vetotime : integer := 8;
+				Nbits_deadtime : integer := 8
+	);
+	port( clk : in std_logic :='0';
+			reset : in std_logic :='0';
+			output_mode : in std_logic_vector(1 downto 0);
+			
+			enable_crystal_retrig : in std_logic :='0';
+			crystal_gate_len : in std_logic_vector(Nbits_crystal_gate-1 downto 0) :=(others=>'0');
+			crystal_input : in std_logic_vector(2*Ncrystal-1 downto 0) :=(others=>'0');
+			
+			enable_veto_retrig : in std_logic := '0';
+			veto_mask : in std_logic_vector(Nveto_pmt-1 downto 0) :=(others=>'0');
+			veto_majority_level : in std_logic_vector(Nbits_majlev-1 downto 0) :=(others=>'0');
+			veto_gate_len : in std_logic_vector(Nbits_veto_gate-1 downto 0) :=(others=>'0');
+			veto_input : in std_logic_vector(Nveto_pmt-1 downto 0) :=(others=>'0');
+
+			sig_delay_time : in std_logic_vector(2 downto 0) :=(others=>'0'); -- 3 bits for signal delay time.
+			veto_window : in std_logic_vector(Nbits_vetotime-1 downto 0) :=(others=>'0'); -- duration of veto
+			dead_time : in std_logic_vector(Nbits_deadtime-1 downto 0) :=(others=>'0');
+			trig_time : in std_logic_vector(Nbits_trigtime-1 downto 0) :=(others=>'0');
+			
+			trig_out : out std_logic :='0';
+			reset_out : out std_logic := '0'
+	);
+end sabre_trigger;
+
+architecture arch_sabre_trigger of sabre_trigger is
+signal crystal_module_out, temp_coin : std_logic_vector(Ncrystal-1 downto 0);
+signal trig_reset, Qxystal, Qveto : std_logic;
+begin
+
+	lb_xystal: for i in 0 to Ncrystal-1 generate
+	begin
+		lb_xystal_coin: entity work.crystal_coincidence(arch_crystal_coincidence)
+			generic map( Npmt => 2, Nbits_gate => Nbits_crystal_gate )
+			port map( clk => clk, reset => reset and trig_reset, en_retrig => enable_crystal_retrig,
+						 gate_len => crystal_gate_len, crystal_input => crystal_input(2*i+1 downto 2*i),
+						 crystal_trigger => temp_coin(i)
+			);
+	end generate;
+	
+	-- OR gate between different PMT modules.
+	crystal_module_out(0) <= temp_coin(0);
+	lb_xystal_or: for i in 1 to Ncrystal-1 generate
+	begin
+		crystal_module_out(i) <= (temp_coin(i) or crystal_module_out(i-1));
+	end generate;
+	Qxystal <= crystal_module_out(Ncrystal-1);
+	
+	lb_veto: entity work.veto_trigger(arch_veto_trigger)
+		generic map( Npmt => Nveto_pmt, Nbits_majlev => Nbits_majlev, Nbits_gate => Nbits_veto_gate )
+		port map( clk => clk, reset => reset and trig_reset, en_retrig => enable_veto_retrig, mask => veto_mask,
+					 majority_level => veto_majority_level, gate_len => veto_gate_len,
+					 veto_input => veto_input, veto_trigger => Qveto
+		);
+	
+	lb_trig: entity work.trigger_output(arch_trigger_output)
+		generic map( Nbits_trigtime => Nbits_trigtime, Nbits_vetotime => Nbits_vetotime, Nbits_deadtime => Nbits_deadtime )
+		port map( clk=>clk, reset => reset, crystal_input => Qxystal, output_mode => output_mode,
+					 veto_input => Qveto, sig_delay_time => sig_delay_time,
+					 veto_window => veto_window, dead_time => dead_time, trig_time => trig_time,
+					 trig_out => trig_out, reset_out => trig_reset
+		);
+	reset_out <= trig_reset;
+end arch_sabre_trigger;

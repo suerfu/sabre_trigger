@@ -15,27 +15,15 @@ use ieee.numeric_std.all;
 -- 4) veto independent trigger
 
 entity trigger_output is
-	generic( Nbits_trigtime : integer := 3;
-					-- length of trigger time
-				Nbits_vetotime : integer := 8;
-					-- number of bits for veto window
-				Nbits_deadtime : integer := 8
-					-- number of bits for dead time
+	generic( Nbits_trigtime : integer := 3; -- duration of trigger pulse
+				Nbits_vetotime : integer := 8; -- length of veto window
+				Nbits_deadtime : integer := 8  -- duration of dead time
 				--Nbits_delaytime : integer := 3
-					-- number of bits needed to describe delay time
-					-- the delay generator is an 8-bit shift register
-					-- do not change this value since 8 is hard-coded.
-				);
+	);
 	port( clk : in std_logic;
-				-- system clock input
 			reset : in std_logic;
-				-- system global reset by user
 			crystal_input : in std_logic;
-				-- crystal coincidence input
 			veto_input : in std_logic;
-				-- veto input
-			veto_en : in std_logic;
-				-- veto enable / diable
 			sig_delay_time : in std_logic_vector(2 downto 0);
 				-- amount of delay in clock cycle applied to signal
 				-- during the delay, system waits for veto signal
@@ -53,26 +41,23 @@ entity trigger_output is
 				-- duration of trigger output
 			reset_out : out std_logic
 				-- reset signal to NaI and veto components when either trig out or veto in.
-			);
-	
+	);
 end trigger_output;
 
 architecture arch_trigger_output of trigger_output is
-signal delayed_out, mux_out, signal_out, veto_out, enable_veto, indep_trigger: std_logic;
+signal delayed_out, mux_out, enable_veto, indep_trigger : std_logic;
+signal reset_intnl, signal_out, veto_out : std_logic;
+signal sync1, sync2 : std_logic;
 begin
-	indep_trigger <= crystal_input or veto_input;
+	indep_trigger <= crystal_input or veto_input; -- fires when either crystal or LS fires
+	reset_intnl <= (not signal_out) and (not veto_out); -- reset internal registers
 
 	-- shift register / delay generator to wait for possible veto
 	gate_delay: entity work.delay_gen(arch_delay_gen)
---		generic map(Nbits_gate => Nbits_delaytime) -- using 8-bit shift-reg, no longer needed.
-		port map( clk => clk,
-					 reset => reset and (not signal_out) and (not veto_out),
-					 sync_clr => '0',
-					 delay => sig_delay_time,
-					 D => crystal_input,
-					 Q => delayed_out
-					);
-					
+		port map( clk => clk, reset => reset and reset_intnl,
+					 sync_clr => '0', delay => sig_delay_time, D => crystal_input, Q => delayed_out
+		);
+
 	-- multiplexer for choosing output mode
 	with output_mode select
 		mux_out <= crystal_input when "01",
@@ -80,42 +65,35 @@ begin
 					  indep_trigger when "11",
 					  delayed_out when others;
 
-	-- output gate generator (either gate_gen or sync edge detector)
-	gate_trig: entity work.gate_generator(arch_gate_generator)
+	-- trigger output gate generator (either gate_gen or sync edge detector)
+	lb_sync_det1: entity work.sync_edge_detector(arch_sync_edge_detector)
+		port map( clk => clk, reset => reset_intnl, D => mux_out, Q => sync1);
+		
+	lb_trig: entity work.gate_generator(arch_gate_generator_mealy)
 		generic map(Nbits_gate => Nbits_trigtime)
-		port map( clk => clk,
-					 reset => reset,
-					 en => mux_out,
-					 gate_len => trig_time,
-					 gate => trig_out
-					);
---	gate_trig: entity work.sync_edge_detector(arch_sync_edge_detector)
---		port map( clk => clk,
---					 reset => reset,
---					 D => mux_out,
---					 Q => trig_out
---					);
-
-	gate_deadwin: entity work.gate_generator(arch_gate_generator)
+		port map( clk => clk, reset => reset, en => sync1,
+					 gate_len => trig_time, gate => trig_out
+		);
+	-- dead window
+	lb_deadwin: entity work.gate_generator(arch_gate_generator_mealy)
 		generic map(Nbits_gate => Nbits_deadtime)
-		port map( clk => clk,
-					 reset => reset,
-					 en => mux_out,
-					 gate_len => dead_time,
-					 gate => signal_out
-					);
-					
-	gate_veto: entity work.gate_generator(arch_gate_generator)
+		port map( clk => clk, reset => reset, en => sync1,
+					 gate_len => dead_time, gate => signal_out
+		);
+	--veto window
+	lb_sync_det2: entity work.sync_edge_detector(arch_sync_edge_detector)
+		port map( clk => clk, reset => reset and reset_intnl and enable_veto,
+					 D => veto_input, Q => sync2
+		);
+		
+	gate_veto: entity work.gate_generator(arch_gate_generator_mealy)
 		generic map(Nbits_gate => Nbits_vetotime)
-		port map( clk => clk,
-					 reset => reset and enable_veto,
-					 en => veto_input,-- and enable_veto,
-					 gate_len => veto_window,
-					 gate => veto_out
-					);
-	enable_veto <= veto_en when output_mode="00" else
+		port map( clk => clk, reset => reset and enable_veto,
+					 en => sync2, gate_len => veto_window, gate => veto_out
+		);
+		
+	enable_veto <= '1' when output_mode="00" else
 						'0';
-	
-	reset_out <= (not signal_out) and (not veto_out);
+	reset_out <= reset_intnl;
 	
 end arch_trigger_output;
