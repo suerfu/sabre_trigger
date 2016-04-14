@@ -27,7 +27,7 @@ end hw_crystal_coin;
 architecture arch_hw_crystal_coin of hw_crystal_coin is
 
 --signal clk : std_logic;
-constant gate_len : std_logic_vector := std_logic_vector(to_unsigned(5,Nbits_gate));
+constant gate_len : std_logic_vector := std_logic_vector(to_unsigned(10,Nbits_gate));
 signal temp : std_logic;
 signal count1,count2 : std_logic_vector(7 downto 0);
 signal sync_out: std_logic_vector(1 downto 0);
