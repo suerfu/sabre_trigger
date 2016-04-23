@@ -63,7 +63,7 @@ begin
 	end process;
 
 	-- Moore output
-	process(state_reg)
+	process(state_reg, min)
 	begin
 		case state_reg is
 			when idle =>
@@ -161,7 +161,6 @@ begin
 	lb_buff: entity work.dflipflop(arch_dff_reset_low)
 		port map(D=>load_ctr, Q=>loaded, clk=>clk, reset=>reset);
 		-- use one stage buffer to avoid instantaneous reset.
-	--loaded <= load_ctr;
 	
 	gate <= not min;
 end arch_gate_generator_mealy;

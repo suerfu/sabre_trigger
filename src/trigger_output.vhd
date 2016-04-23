@@ -18,29 +18,29 @@ entity trigger_output is
 	generic( Nbits_trigtime : integer := 3; -- duration of trigger pulse
 				Nbits_vetotime : integer := 8; -- length of veto window
 				Nbits_deadtime : integer := 8  -- duration of dead time
-				--Nbits_delaytime : integer := 3
+				--Nbits_delaytime : integer := 3	-- not needed for shift register
 	);
 	port( clk : in std_logic;
 			reset : in std_logic;
-			crystal_input : in std_logic;
-			veto_input : in std_logic;
+			crystal_input : in std_logic;		-- crystal coincidence signal
+			veto_input : in std_logic;			-- veto coincidence input
 			sig_delay_time : in std_logic_vector(2 downto 0);
-				-- amount of delay in clock cycle applied to signal
-				-- during the delay, system waits for veto signal
-				-- the delay generator is an 8-bit shift register, so need only 3 numbers
+														-- amount of delay in clock cycle applied to signal
+														-- during the delay, system waits for veto signal
+														-- implemented with 8-bit shift register
 			veto_window : in std_logic_vector(Nbits_vetotime-1 downto 0);
-				-- length of veto window in number of clock cycles
+														-- length of veto window in number of clock cycles
 			dead_time : in std_logic_vector(Nbits_deadtime-1 downto 0);
-				-- dead time after trigger is output
+														-- dead time after trigger is output
 			output_mode : in std_logic_vector(1 downto 0);
-				-- output mode: 00 for NaI alone as trigger, 11 as veto alone as trigger
-				-- other as vetoed NaI output
+														-- output mode: 01 for NaI alone, 10 for liquid scintillator alone
+														-- 00 for veto mode, 11 for either NaI or liquid scintillator
 			trig_out : out std_logic;
-				-- trigger output to enable DAQ
+														-- trigger output to enable DAQ
 			trig_time : in std_logic_vector(Nbits_trigtime-1 downto 0);
-				-- duration of trigger output
+														-- duration of trigger output
 			reset_out : out std_logic
-				-- reset signal to NaI and veto components when either trig out or veto in.
+														-- reset signal to NaI and veto components when either trig out or veto in.
 	);
 end trigger_output;
 
