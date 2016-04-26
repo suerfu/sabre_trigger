@@ -5,7 +5,7 @@ library IEEE;
 use IEEE.std_Logic_1164.all;
 use IEEE.std_Logic_arith.all;
 use IEEE.std_Logic_unsigned.all;
-use work.components.all;
+
 
 entity caen_sabre_trigger is
 	port(
@@ -41,10 +41,10 @@ end caen_sabre_trigger;
 
 architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 
-	signal REG_CTRL		: in std_logic_vector(31 downto 0);
-	signal REG_GATE_LEN	: in std_logic_vector(31 downto 0);
-	signal REG_DEAD_TIME	: in std_logic_vector(31 downto 0);
-	signal REG_TIME_BOMB	: in std_logic_vector(31 downto 0) := (others=>'0');
+	signal REG_CTRL		: std_logic_vector(31 downto 0);
+	signal REG_GATE_LEN	: std_logic_vector(31 downto 0);
+	signal REG_DEAD_TIME	: std_logic_vector(31 downto 0);
+	signal REG_TIME_BOMB	: std_logic_vector(31 downto 0) := (others=>'0');
 	
 	-- alias signals for control register
 	alias go : std_logic is REG_CTRL(0);
@@ -65,19 +65,22 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	alias dead_time : std_logic_vector(15 downto 0) is REG_DEAD_TIME( 15 downto 0);
 	alias veto_window : std_logic_vector(15 downto 0) is REG_DEAD_TIME( 31 downto 16);
 	
-	signal G_trig_out;
-	alias crystal_input : std_logic is A();
-	alias veto_input : std_logic is B();
+	signal G_trig_out : std_logic;
+	alias crystal_input : std_logic_vector is B(11 downto 10);
+	alias veto_input : std_logic_vector is B(9 downto 0);
 	
 begin
 
 	nOEG  <=  '1';
 	SELG  <=  '1';  -- 1 for TTL, can also derive it from VME communication
-	
+
+	nLEDR <= G_trig_out;
+	nLEDG <= go;
+
 	sabre: entity work.sabre_trigger(arch_sabre_trigger)
 		generic map( Ncrystal => 1, Nbits_crystal_gate => 16,
 						 Nveto_pmt => 10, Nbits_majlev => 3, Nbits_veto_gate => 16,
-						 Nbits_trigtime => 16, Nbits_vetotime => 16, Nbits_deadtime => 16
+						 Nbits_trigtime => 8, Nbits_vetotime => 16, Nbits_deadtime => 16
 		)
 		port map( clk => LCLK, reset => (go and reset), output_mode => output_mode,
 					 enable_crystal_retrig => enable_crystal_retrig,

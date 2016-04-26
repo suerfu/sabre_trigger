@@ -21,10 +21,10 @@ entity lb_int is
 		LAD        : inout  std_logic_vector(15 DOWNTO 0);
 
 		-- Internal Registers
-		REG_CTRL       	: in std_logic_vector(31 downto 0);
-		REG_GATE_LEN		: in std_logic_vector(31 downto 0);
-		REG_DEAD_TIME     : in std_logic_vector(31 downto 0);
-		REG_TIME_BOMB		: in std_logic_vector(31 downto 0)
+		REG_CTRL       	: buffer std_logic_vector(31 downto 0);
+		REG_GATE_LEN		: buffer std_logic_vector(31 downto 0);
+		REG_DEAD_TIME     : buffer std_logic_vector(31 downto 0);
+		REG_TIME_BOMB		: buffer std_logic_vector(31 downto 0)
 	);
 end lb_int;
 
