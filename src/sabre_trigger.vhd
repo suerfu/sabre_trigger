@@ -7,7 +7,7 @@ entity sabre_trigger is
 				Nbits_crystal_gate : integer := 8;	-- coincidence gate up to ~5 us.
 				
 				Nveto_pmt : integer := 10;
-				Nbits_majlev : integer := 3;	-- 4 bits needed to enumerate up to 10, but 3 is fine.
+				Nbits_majlev : integer := 4;	-- 4 bits needed to enumerate up to 10, but 3 is fine.
 				Nbits_veto_gate : integer := 8;	-- up to 5 us.
 				
 				Nbits_trigtime : integer := 8; -- up to 5 us.
@@ -33,6 +33,7 @@ entity sabre_trigger is
 			dead_time : in std_logic_vector(Nbits_deadtime-1 downto 0) :=(others=>'0');
 			trig_time : in std_logic_vector(Nbits_trigtime-1 downto 0) :=(others=>'0');
 			
+			force_trigger : in std_logic := '0';
 			trig_out : out std_logic :='0';
 			reset_out : out std_logic := '0'
 	);
@@ -73,7 +74,7 @@ begin
 		port map( clk=>clk, reset => reset, crystal_input => Qxystal, output_mode => output_mode,
 					 veto_input => Qveto, sig_delay_time => sig_delay_time,
 					 veto_window => veto_window, dead_time => dead_time, trig_time => trig_time,
-					 trig_out => trig_out, reset_out => trig_reset
+					 force_trigger => force_trigger, trig_out => trig_out, reset_out => trig_reset
 		);
 	reset_out <= trig_reset;
 end arch_sabre_trigger;

@@ -35,6 +35,8 @@ entity trigger_output is
 			output_mode : in std_logic_vector(1 downto 0);
 														-- output mode: 01 for NaI alone, 10 for liquid scintillator alone
 														-- 00 for veto mode, 11 for either NaI or liquid scintillator
+			force_trigger : in std_logic;
+														-- used for software trigger
 			trig_out : out std_logic;
 														-- trigger output to enable DAQ
 			trig_time : in std_logic_vector(Nbits_trigtime-1 downto 0);
@@ -47,7 +49,7 @@ end trigger_output;
 architecture arch_trigger_output of trigger_output is
 signal delayed_out, mux_out, enable_veto, indep_trigger : std_logic;
 signal reset_intnl, signal_out, veto_out : std_logic;
-signal sync1, sync2 : std_logic;
+signal sync1, sync2, deadwin : std_logic;
 begin
 	indep_trigger <= crystal_input or veto_input; -- fires when either crystal or LS fires
 	reset_intnl <= (not signal_out) and (not veto_out); -- reset internal registers
@@ -68,16 +70,18 @@ begin
 	-- trigger output gate generator (either gate_gen or sync edge detector)
 	lb_sync_det1: entity work.sync_edge_detector(arch_sync_edge_detector)
 		port map( clk => clk, reset => reset_intnl, D => mux_out, Q => sync1);
-		
+
 	lb_trig: entity work.gate_generator(arch_gate_generator_mealy)
 		generic map(Nbits_gate => Nbits_trigtime)
-		port map( clk => clk, reset => reset, en => sync1,
+		port map( clk => clk, reset => reset, en => sync1 or force_trigger,
 					 gate_len => trig_time, gate => trig_out
 		);
 	-- dead window
+	deadwin <= crystal_input when output_mode = "00" else
+				  sync1;
 	lb_deadwin: entity work.gate_generator(arch_gate_generator_mealy)
 		generic map(Nbits_gate => Nbits_deadtime)
-		port map( clk => clk, reset => reset, en => sync1,
+		port map( clk => clk, reset => reset, en => deadwin,
 					 gate_len => dead_time, gate => signal_out
 		);
 	--veto window

@@ -45,6 +45,7 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	signal REG_GATE_LEN	: std_logic_vector(31 downto 0);
 	signal REG_DEAD_TIME	: std_logic_vector(31 downto 0);
 	signal REG_TIME_BOMB	: std_logic_vector(31 downto 0) := X"F00D0ADC"; -- bit 15 must be 0
+	signal soft_trigger : std_logic;
 	
 	-- alias signals for control register
 	alias go : std_logic is REG_CTRL(0);
@@ -53,9 +54,9 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	alias enable_crystal_retrig : std_logic is REG_CTRL(4);
 	alias enable_veto_retrig : std_logic is REG_CTRL(5);
 	alias veto_mask : std_logic_vector(9 downto 0) is REG_CTRL(15 downto 6);
-	alias veto_majority_level : std_logic_vector(2 downto 0) is REG_CTRL(18 downto 16);
-	alias sig_delay_time : std_logic_vector(2 downto 0) is REG_CTRL(21 downto 19);
-	alias trig_time : std_logic_vector(7 downto 0) is REG_CTRL(29 downto 22);
+	alias veto_majority_level : std_logic_vector(3 downto 0) is REG_CTRL(19 downto 16);
+	alias sig_delay_time : std_logic_vector(2 downto 0) is REG_CTRL(22 downto 20);
+	alias trig_time : std_logic_vector(7 downto 0) is REG_CTRL(30 downto 23);
 	
 	-- alias for gate length register
 	alias crystal_gate_len : std_logic_vector(15 downto 0) is REG_GATE_LEN(15 downto 0);
@@ -79,7 +80,7 @@ begin
 
 	sabre: entity work.sabre_trigger(arch_sabre_trigger)
 		generic map( Ncrystal => 1, Nbits_crystal_gate => 16,
-						 Nveto_pmt => 10, Nbits_majlev => 3, Nbits_veto_gate => 16,
+						 Nveto_pmt => 10, Nbits_majlev => 4, Nbits_veto_gate => 16,
 						 Nbits_trigtime => 8, Nbits_vetotime => 16, Nbits_deadtime => 16
 		)
 		port map( clk => LCLK, reset => (go and reset), output_mode => output_mode,
@@ -95,7 +96,8 @@ begin
 					 veto_window => veto_window,
 					 dead_time => dead_time,
 					 trig_time => trig_time,
-					 trig_out =>G_trig_out
+					 force_trigger => soft_trigger,
+					 trig_out => G_trig_out
 		);
 
   lb_int: entity work.lb_int
@@ -109,6 +111,7 @@ begin
 			nREADY      => nREADY,   
 			nINT        => nINT,     
 			LAD         => LAD,
+			soft_trigger => soft_trigger,
 
 			-- Internal Registers
 			REG_CTRL => REG_CTRL,

@@ -20,6 +20,9 @@ entity lb_int is
 		nINT       : out	  std_logic;
 		LAD        : inout  std_logic_vector(15 DOWNTO 0);
 
+		-- Software trigger via write access
+		soft_trigger : out std_logic;
+		
 		-- Internal Registers
 		REG_CTRL       	: buffer std_logic_vector(31 downto 0);
 		REG_GATE_LEN		: buffer std_logic_vector(31 downto 0);
@@ -50,6 +53,9 @@ architecture arch_lb_int of lb_int is
 	constant A_REG_DEAD_TIME   : std_logic_vector(15 downto 0) := X"1038";
 	constant A_REG_TIME_BOMB   : std_logic_vector(15 downto 0) := X"100C";
 	
+	-- Software trigger
+	constant A_REG_SOFT_TRIG	: std_logic_vector(15 downto 0) := X"1042";
+	
 begin
 LAD	<= LADout when LADoe = '1' else (others => 'Z'); -- output tri-state
 -- Local bus FSM
@@ -70,6 +76,9 @@ begin
       rreg        := (others => '0');
       wreg        := (others => '0');
       LBSTATE     <= LBIDLE;
+		
+		soft_trigger <= '0';
+		
 	elsif rising_edge(LCLK) then
       case LBSTATE is
         when LBIDLE  =>  
@@ -106,6 +115,8 @@ begin
 					REG_DEAD_TIME <= wreg;
 				when A_REG_TIME_BOMB =>
 					REG_TIME_BOMB <= wreg and X"FFFF7FFF";
+				when A_REG_SOFT_TRIG =>
+					soft_trigger <= '1';
             when others =>
 					null;
           end case;

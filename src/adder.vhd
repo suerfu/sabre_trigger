@@ -2,27 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- Suerfu @ May 18, 2016
--- full_adder will add three numbers to produce a two bit numbers
--- effectively the count of ones in the input
-
-entity full_adder is
-	port(	A : in std_logic_vector(2 downto 0);
-			S : out std_logic_vector(1 downto 0)	
-	);
-end full_adder;
-
-architecture arch_full_adder of full_adder is
-begin
-	with A select
-		S <=	"00" when "000",
-				"11" when "111",
-				"10" when "110",
-				"10" when "011",
-				"10" when "101",
-				"01" when others;
-end arch_full_adder;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -38,16 +17,81 @@ entity adder is
 	
 	port( A : in std_logic_vector(Nbits_in-1 downto 0) := (others=>'0');
 			B : in std_logic_vector(Nbits_in-1 downto 0) := (others=>'0');
-			Cin : in std_logic_vector(0 downto 0) := "0";
+			Cin : in std_logic := '0';
 			S : out std_logic_vector(Nbits_out-1 downto 0) := (others=>'0')
 	);
 end adder;
 
 architecture arch_adder of adder is
-signal tmp : std_logic_vector(Nbits_in-1 downto 0);
-signal tmp2 : std_logic_vector(Nbits_out-1 downto Nbits_in-2) := (others=>'0');
+
 begin
-	tmp <= std_logic_vector(unsigned(A) + unsigned(B) + unsigned(Cin));
-	S <= tmp2 & tmp;
-		-- convert vector to unsigned to do addition, then convert back.
+--	fulladd: if (Nbits_in = 1) and (Nbits_out = 2) generate
+--	signal sel : std_logic_vector(2 downto 0);
+--	begin
+--		sel <= A(0) & B(0) & Cin;
+--		with  sel select
+--		S <=	"00" when "000",
+--				"11" when "111",
+--				"10" when "110",
+--				"10" when "011",
+--				"10" when "101",
+--				"01" when others;
+--	end generate;
+	
+	general: if (Nbits_in >= 1) generate
+	signal Cvec : std_logic_vector(0 downto 0);
+	signal Stmp : std_logic_vector(Nbits_in downto 0);
+	begin
+		Cvec(0) <= Cin;
+		Stmp <= std_logic_vector(unsigned('0'& A) + unsigned('0'& B) + unsigned(Cvec));
+
+		noincr: if Nbits_out - Nbits_in = 1 generate
+		begin
+			S <= Stmp;
+		end generate;
+		
+		incr: if Nbits_out - Nbits_in >1 generate
+		constant zero : std_logic_vector(Nbits_out - Nbits_in -2 downto 0) := (others=>'0');
+		begin
+			S <= zero & Stmp;
+		end generate;
+	end generate;
+
 end arch_adder;
+
+--library ieee;
+--use ieee.std_logic_1164.all;
+--use ieee.numeric_std.all;
+
+-- Suerfu @ May 20, 2016
+-- Cascade adder will count ones in the input vector of size 2**(n+1)-1
+-- General case is fairly hard to implement. Will postpone, and implement case n=10
+-- hard-coded.
+--
+--entity cascade_adder is
+--	generic( N : integer := 2;
+--				Nbits_cmpr : integer := N+1
+--					-- for n layers, total number of ones are 2**(n+1)-1
+--					-- needs n+1 numbers to represent in binary form
+--	);
+--	port( A : in std_logic_vector(2**Nbits_cmpr-2 downto 0) := (others=>'0');
+--			S : out std_logic_vector(Nbits_cmpr-1 downto 0) := (others=>'0')
+--	);
+--end cascade_adder;
+--
+--architecture arch_cascade_adder of cascade_adder is
+--
+--signal carry_out : std_logic_vector(2**N-1 downto 0);
+--
+--begin
+--	FA: for j in 1 to 2**(N-1) generate
+--	begin
+--		
+--	end generate;
+--	
+--	for i in N downto 1 generate
+--	begin
+--		for j in 
+--	end generate;
+--
+--end arch_cascade_adder;
