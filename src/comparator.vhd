@@ -62,8 +62,9 @@ entity majority_comparator is
 	);
 end majority_comparator;
 
-
-architecture arch_majority_comparator of majority_comparator is
+-- following implementation is a general cascade adder
+-- Suerfu @ May 18, 2016
+architecture arch_majority_comparator_cascade of majority_comparator is
 type array_result is array(0 to Nbits-1) of unsigned(Nbits_cmpr-1 downto 0);
 signal result_temp : array_result;
 
@@ -83,4 +84,27 @@ begin
 	Q <= result;
 	Qbar <= (not result);
 
-end arch_majority_comparator;
+end arch_majority_comparator_cascade;
+
+-- adding bit by bit. This implementation is simple but not efficient.
+--architecture arch_majority_comparator of majority_comparator is
+--type array_result is array(0 to Nbits-1) of unsigned(Nbits_cmpr-1 downto 0);
+--signal result_temp : array_result;
+--
+--signal result : std_logic;
+--constant zero : std_logic_vector(Nbits_cmpr-2 downto 0) := (others=>'0'); -- (Nbits-2 downto 0);
+--begin
+--
+--	result_temp(0) <= unsigned(zero & D(0));
+--	majority_level : for i in 1 to Nbits-1 generate
+--	begin
+--		result_temp(i) <= result_temp(i-1) + unsigned(zero & D(i));
+--	end generate;
+--	
+--	result <= '1' when (result_temp(Nbits-1) >= unsigned(window)) else
+--				 '0';
+--	count <= std_logic_vector(result_temp(Nbits-1));
+--	Q <= result;
+--	Qbar <= (not result);
+--
+--end arch_majority_comparator;

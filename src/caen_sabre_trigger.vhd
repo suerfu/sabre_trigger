@@ -44,7 +44,7 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	signal REG_CTRL		: std_logic_vector(31 downto 0);
 	signal REG_GATE_LEN	: std_logic_vector(31 downto 0);
 	signal REG_DEAD_TIME	: std_logic_vector(31 downto 0);
-	signal REG_TIME_BOMB	: std_logic_vector(31 downto 0) := (others=>'0');
+	signal REG_TIME_BOMB	: std_logic_vector(31 downto 0) := X"F00D0ADC"; -- bit 15 must be 0
 	
 	-- alias signals for control register
 	alias go : std_logic is REG_CTRL(0);
@@ -74,8 +74,8 @@ begin
 	nOEG  <=  '1';
 	SELG  <=  '1';  -- 1 for TTL, can also derive it from VME communication
 
-	nLEDR <= G_trig_out;
-	nLEDG <= go;
+	nLEDR <= not G_trig_out;
+	nLEDG <= not go;
 
 	sabre: entity work.sabre_trigger(arch_sabre_trigger)
 		generic map( Ncrystal => 1, Nbits_crystal_gate => 16,

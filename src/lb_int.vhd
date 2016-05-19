@@ -105,7 +105,7 @@ begin
             when A_REG_DEAD_TIME =>
 					REG_DEAD_TIME <= wreg;
 				when A_REG_TIME_BOMB =>
-					REG_TIME_BOMB <= wreg;
+					REG_TIME_BOMB <= wreg and X"FFFF7FFF";
             when others =>
 					null;
           end case;
