@@ -21,13 +21,15 @@ entity lb_int is
 		LAD        : inout  std_logic_vector(15 DOWNTO 0);
 
 		-- Software trigger via write access
-		soft_trigger : out std_logic;
+		--soft_trigger : out std_logic;
 		
 		-- Internal Registers
 		REG_CTRL       	: buffer std_logic_vector(31 downto 0);
 		REG_GATE_LEN		: buffer std_logic_vector(31 downto 0);
 		REG_DEAD_TIME     : buffer std_logic_vector(31 downto 0);
-		REG_TIME_BOMB		: buffer std_logic_vector(31 downto 0)
+		REG_TIME_BOMB		: buffer std_logic_vector(31 downto 0);
+		REG_SOFT_TRIG		: buffer std_logic_vector(31 downto 0);
+		soft_trigger		: buffer std_logic := '0'
 	);
 end lb_int;
 
@@ -57,16 +59,20 @@ architecture arch_lb_int of lb_int is
 	constant A_REG_SOFT_TRIG	: std_logic_vector(15 downto 0) := X"1042";
 	
 begin
+--soft_trigger <= REG_SOFT_TRIG(0);
 LAD	<= LADout when LADoe = '1' else (others => 'Z'); -- output tri-state
 -- Local bus FSM
 process(LCLK, nLBRES)
 variable rreg, wreg   : std_logic_vector(31 downto 0);
 begin
 	if (nLBRES = '0') then
-      REG_CTRL <= (others => '0'); -- default, mode 00, no retrig, no sig delay, no trig time, reset on
+      REG_CTRL <= (others => '0');
+			-- default, mode 00, no retrig, no sig delay, no trig time, reset on
       REG_GATE_LEN <= (others => '0');
       REG_DEAD_TIME <= (others=>'0');
 		REG_TIME_BOMB <= (others=>'0');
+		REG_SOFT_TRIG <= (others=>'0');
+		soft_trigger <= '0';
 
       nREADY      <= '1';
       LADoe       <= '0';
@@ -77,13 +83,12 @@ begin
       wreg        := (others => '0');
       LBSTATE     <= LBIDLE;
 		
-		soft_trigger <= '0';
-		
 	elsif rising_edge(LCLK) then
       case LBSTATE is
         when LBIDLE  =>  
           LADoe   <= '0';
 			 nREADY  <= '1';
+			 soft_trigger <= '0';
           if (nADS = '0') then        -- start cycle
 				ADDR <= LAD;              -- Address Sampling
             if (WnR = '1') then       -- Write Access to the registers
@@ -116,6 +121,7 @@ begin
 				when A_REG_TIME_BOMB =>
 					REG_TIME_BOMB <= wreg and X"FFFF7FFF";
 				when A_REG_SOFT_TRIG =>
+					REG_SOFT_TRIG <= wreg;
 					soft_trigger <= '1';
             when others =>
 					null;
@@ -135,6 +141,8 @@ begin
 					rreg := REG_DEAD_TIME;
 				when A_REG_TIME_BOMB =>
 					rreg := REG_TIME_BOMB;
+				when A_REG_SOFT_TRIG =>
+					rreg := REG_SOFT_TRIG;
             when others =>
 					null;
           end case;

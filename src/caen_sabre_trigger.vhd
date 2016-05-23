@@ -45,7 +45,7 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	signal REG_GATE_LEN	: std_logic_vector(31 downto 0);
 	signal REG_DEAD_TIME	: std_logic_vector(31 downto 0);
 	signal REG_TIME_BOMB	: std_logic_vector(31 downto 0) := X"F00D0ADC"; -- bit 15 must be 0
-	signal soft_trigger : std_logic;
+	signal REG_SOFT_TRIG : std_logic_vector(31 downto 0) := (others=>'0');
 	
 	-- alias signals for control register
 	alias go : std_logic is REG_CTRL(0);
@@ -70,14 +70,19 @@ architecture arch_caen_sabre_trigger of caen_sabre_trigger is
 	alias crystal_input : std_logic_vector is B(11 downto 10);
 	alias veto_input : std_logic_vector is B(9 downto 0);
 	
+	signal soft_trigger : std_logic := '0';
 begin
 
 	nOEG  <=  '1';
 	SELG  <=  '1';  -- 1 for TTL, can also derive it from VME communication
 
-	nLEDR <= not G_trig_out;
-	nLEDG <= not go;
+	--nLEDR <= not G_trig_out;	-- when trigger, redlight for busy
+	nLEDR <= not soft_trigger;
+	--nLEDG <= not (go and (not G_trig_out) );	-- when board ready and no trigger, green light
+	nLEDG <= not (go and (not soft_trigger) );	-- when board ready and no trigger, green light
 
+	--soft_trigger <= REG_SOFT_TRIG(0);
+	
 	sabre: entity work.sabre_trigger(arch_sabre_trigger)
 		generic map( Ncrystal => 1, Nbits_crystal_gate => 16,
 						 Nveto_pmt => 10, Nbits_majlev => 4, Nbits_veto_gate => 16,
@@ -111,16 +116,16 @@ begin
 			nREADY      => nREADY,   
 			nINT        => nINT,     
 			LAD         => LAD,
-			soft_trigger => soft_trigger,
 
 			-- Internal Registers
 			REG_CTRL => REG_CTRL,
 			REG_DEAD_TIME => REG_DEAD_TIME,
 			REG_GATE_LEN => REG_GATE_LEN,
-			REG_TIME_BOMB => REG_TIME_BOMB
+			REG_TIME_BOMB => REG_TIME_BOMB,
+			REG_SOFT_TRIG => REG_SOFT_TRIG,
+			soft_trigger => soft_trigger
 		);
 		
 	GOUT <= (others=>G_trig_out);
 
 end arch_caen_sabre_trigger;
-   
